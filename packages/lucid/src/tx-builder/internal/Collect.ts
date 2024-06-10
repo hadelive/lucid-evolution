@@ -8,7 +8,7 @@ import {
   TxBuilderError,
   TxBuilderErrorCause,
 } from "../../Errors.js";
-import * as CML from "@dcspark/cardano-multiplatform-lib-nodejs";
+import * as CML from "@hadelive/cardano-multiplatform-lib-nodejs";
 import { toPartial, toV1, toV2 } from "./TxUtils.js";
 import { paymentCredentialOf } from "@lucid-evolution/utils";
 import { datumOf } from "../../lucid-evolution/utils.js";
@@ -19,7 +19,7 @@ export const collectError = (cause: TxBuilderErrorCause, message?: string) =>
 export const collectFromUTxO = (
   config: TxBuilder.TxBuilderConfig,
   utxos: UTxO[],
-  redeemer?: Redeemer,
+  redeemer?: Redeemer
 ): Effect.Effect<void, TxBuilderError> =>
   Effect.gen(function* ($) {
     if (utxos.length === 0)
@@ -30,7 +30,7 @@ export const collectFromUTxO = (
           Effect.tryPromise({
             try: () => datumOf(config.lucidConfig.provider, utxo),
             catch: (error) => collectError("Datum", String(error)),
-          }),
+          })
         );
         utxo.datum = Data.to(data);
       }
@@ -49,31 +49,31 @@ export const collectFromUTxO = (
           Effect.orElseFail(() =>
             collectError(
               "MissingScript",
-              `No script found, script hash: ${credential.hash}, consider using attach modules`,
-            ),
-          ),
+              `No script found, script hash: ${credential.hash}, consider using attach modules`
+            )
+          )
         );
         switch (script.type) {
           case "Native":
             config.txBuilder.add_input(
               input.native_script(
                 CML.NativeScript.from_cbor_hex(script.script),
-                CML.NativeScriptWitnessInfo.assume_signature_count(),
-              ),
+                CML.NativeScriptWitnessInfo.assume_signature_count()
+              )
             );
           case "PlutusV1": {
             const red = yield* $(
               Effect.fromNullable(redeemer),
               Effect.orElseFail(() =>
-                collectError("MissingRedeemer", ERROR_MESSAGE.MISSIG_REDEEMER),
-              ),
+                collectError("MissingRedeemer", ERROR_MESSAGE.MISSIG_REDEEMER)
+              )
             );
             config.txBuilder.add_input(
               input.plutus_script(
                 toPartial(toV1(script.script), red),
                 CML.Ed25519KeyHashList.new(),
-                CML.PlutusData.from_cbor_hex(utxo.datum!),
-              ),
+                CML.PlutusData.from_cbor_hex(utxo.datum!)
+              )
             );
           }
           case "PlutusV2": {
@@ -81,16 +81,16 @@ export const collectFromUTxO = (
             const red = yield* $(
               Effect.fromNullable(redeemer),
               Effect.orElseFail(() =>
-                collectError("MissingRedeemer", ERROR_MESSAGE.MISSIG_REDEEMER),
-              ),
+                collectError("MissingRedeemer", ERROR_MESSAGE.MISSIG_REDEEMER)
+              )
             );
             const partial = toPartial(v2, red);
             config.txBuilder.add_input(
               //TODO: Test with DatumHash
               input.plutus_script_inline_datum(
                 partial,
-                CML.Ed25519KeyHashList.new(),
-              ),
+                CML.Ed25519KeyHashList.new()
+              )
             );
           }
         }

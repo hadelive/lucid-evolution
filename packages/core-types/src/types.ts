@@ -1,4 +1,4 @@
-import * as CML from "@dcspark/cardano-multiplatform-lib-nodejs";
+import * as CML from "@hadelive/cardano-multiplatform-lib-nodejs";
 type CostModel = Record<string, number>;
 
 export type CostModels = Record<PlutusVersion, CostModel>;
@@ -29,7 +29,7 @@ export interface Provider {
   /** Query UTxOs by address or payment credential filtered by a specific unit. */
   getUtxosWithUnit(
     addressOrCredential: Address | Credential,
-    unit: Unit,
+    unit: Unit
   ): Promise<UTxO[]>;
   /** Query a UTxO by a unit. It needs to be an NFT (or optionally the entire supply in one UTxO). */
   getUtxoByUnit(unit: Unit): Promise<UTxO>;
@@ -177,7 +177,7 @@ export interface Wallet {
   signTx(tx: CML.Transaction): Promise<CML.TransactionWitnessSet>;
   signMessage(
     address: Address | RewardAddress,
-    payload: Payload,
+    payload: Payload
   ): Promise<SignedMessage>;
   submitTx(signedTx: Transaction): Promise<TxHash>;
 }

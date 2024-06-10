@@ -16,7 +16,7 @@ export function valueToAssets(value: CML.Value): Assets {
       for (let k = 0; k < assetNames.len(); k++) {
         const policyAsset = assetNames.get(k);
         const quantity = policyAssets.get(policyAsset)!;
-        //FIX: report to dcspark policyAsset.to_cbor_hex() adds the head byte twice eg. MyMintedToken -> (to Hex) -> 4d4d794d696e746564546f6b656e (This is wrong) | expected Token Name -> 4d794d696e746564546f6b656e
+        //FIX: report to hadelive policyAsset.to_cbor_hex() adds the head byte twice eg. MyMintedToken -> (to Hex) -> 4d4d794d696e746564546f6b656e (This is wrong) | expected Token Name -> 4d794d696e746564546f6b656e
         const unit = policy.to_hex() + fromText(policyAsset.to_str());
         assets[unit] = quantity;
       }
@@ -33,8 +33,8 @@ export function assetsToValue(assets: Assets): CML.Value {
     new Set(
       units
         .filter((unit) => unit !== "lovelace")
-        .map((unit) => unit.slice(0, 56)),
-    ),
+        .map((unit) => unit.slice(0, 56))
+    )
   );
   for (const policy of policies) {
     const policyUnits = units.filter((unit) => unit.slice(0, 56) === policy);
@@ -42,7 +42,7 @@ export function assetsToValue(assets: Assets): CML.Value {
     for (const unit of policyUnits) {
       assetsValue.insert(
         CML.AssetName.from_bytes(fromHex(unit.slice(56))),
-        BigInt(assets[unit]),
+        BigInt(assets[unit])
       );
     }
     multiAsset.insert_assets(CML.ScriptHash.from_hex(policy), assetsValue);
@@ -76,7 +76,7 @@ export function fromUnit(unit: Unit): {
 export function toUnit(
   policyId: PolicyId,
   name?: string | null,
-  label?: number | null,
+  label?: number | null
 ): Unit {
   const hexLabel = Number.isInteger(label) ? toLabel(label!) : "";
   const n = name ? name : "";

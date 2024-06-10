@@ -6,7 +6,7 @@ import {
 } from "@lucid-evolution/core-types";
 import * as TxBuilder from "../TxBuilder.js";
 import { Effect } from "effect";
-import * as CML from "@dcspark/cardano-multiplatform-lib-nodejs";
+import * as CML from "@hadelive/cardano-multiplatform-lib-nodejs";
 import { TxBuilderError, TxBuilderErrorCause } from "../../Errors.js";
 import { validateAddressDetails } from "./TxUtils.js";
 
@@ -15,17 +15,17 @@ export const addSignerError = (cause: TxBuilderErrorCause, message?: string) =>
 
 export const addSigner = (
   config: TxBuilder.TxBuilderConfig,
-  address: Address | RewardAddress,
+  address: Address | RewardAddress
 ) =>
   Effect.gen(function* () {
     const addressDetails = yield* validateAddressDetails(
       address,
-      config.lucidConfig,
+      config.lucidConfig
     );
     if (!addressDetails.paymentCredential && !addressDetails.stakeCredential)
       yield* addSignerError(
         "NotFound",
-        "undefined paymentCredential and stakeCredential",
+        "undefined paymentCredential and stakeCredential"
       );
 
     const credential =
@@ -36,7 +36,7 @@ export const addSigner = (
     if (credential.type === "Script")
       yield* addSignerError(
         "InvalidCredential",
-        "Only key hashes are allowed as signers.",
+        "Only key hashes are allowed as signers."
       );
 
     return credential.hash;
@@ -45,7 +45,7 @@ export const addSigner = (
 /** Add a payment or stake key hash as a required signer of the transaction. */
 export const addSignerKey = (
   config: TxBuilder.TxBuilderConfig,
-  keyHash: PaymentKeyHash | StakeKeyHash,
+  keyHash: PaymentKeyHash | StakeKeyHash
 ) =>
   Effect.gen(function* () {
     config.txBuilder.add_required_signer(CML.Ed25519KeyHash.from_hex(keyHash));

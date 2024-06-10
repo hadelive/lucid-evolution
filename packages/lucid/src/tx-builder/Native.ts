@@ -1,5 +1,5 @@
 import * as S from "@effect/schema/Schema";
-import * as CML from "@dcspark/cardano-multiplatform-lib-nodejs";
+import * as CML from "@hadelive/cardano-multiplatform-lib-nodejs";
 import { Script } from "@lucid-evolution/core-types";
 
 //TODO: move to another package
@@ -63,7 +63,7 @@ const NativeScriptSchema: S.Schema<NativeScriptType> = S.Union(
       n: S.Number,
       native_scripts: S.Array(S.suspend(() => NativeScriptSchema)),
     }),
-  }),
+  })
 );
 
 export const parseNativeScript = S.decodeUnknownEither(NativeScriptSchema);
@@ -83,7 +83,7 @@ export const toNativeScript = (native: Native) => {
   switch (native.type) {
     case "sig":
       return CML.NativeScript.new_script_pubkey(
-        CML.Ed25519KeyHash.from_hex(native.keyHash),
+        CML.Ed25519KeyHash.from_hex(native.keyHash)
       );
     case "before":
       return CML.NativeScript.new_script_invalid_hereafter(BigInt(native.slot));
@@ -104,7 +104,7 @@ export const toNativeScript = (native: Native) => {
       native.scripts.map((script) => nativeList.add(toNativeScript(script)));
       return CML.NativeScript.new_script_n_of_k(
         BigInt(native.required),
-        nativeList,
+        nativeList
       );
     }
   }

@@ -29,8 +29,8 @@
     "@lucid-evolution/core-utils": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^20.12.8",
-    "tsup": "^8.0.2",
+    "@types/node": "^20.14.2",
+    "tsup": "^8.1.0",
     "typescript": "^5.4.5"
   }
 }

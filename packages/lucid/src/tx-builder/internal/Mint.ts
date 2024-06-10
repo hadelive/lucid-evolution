@@ -1,7 +1,7 @@
 import { Effect, pipe } from "effect";
 import { toText } from "@lucid-evolution/core-utils";
 import { Assets, Redeemer } from "@lucid-evolution/core-types";
-import * as CML from "@dcspark/cardano-multiplatform-lib-nodejs";
+import * as CML from "@hadelive/cardano-multiplatform-lib-nodejs";
 import { toPartial, toV1, toV2 } from "./TxUtils.js";
 import {
   ERROR_MESSAGE,
@@ -22,7 +22,7 @@ export const mintError = (cause: TxBuilderErrorCause, message?: string) =>
 export const mintAssets = (
   config: TxBuilder.TxBuilderConfig,
   assets: Assets,
-  redeemer?: Redeemer,
+  redeemer?: Redeemer
 ): Effect.Effect<void, TxBuilderError> =>
   Effect.gen(function* () {
     config.mintedAssets = addAssets(config.mintedAssets, assets);
@@ -36,23 +36,23 @@ export const mintAssets = (
       mintAssets.insert(
         //NOTE: toText is used to maintain API compatibility
         CML.AssetName.from_str(toText(unit.slice(56))),
-        assets[unit],
+        assets[unit]
       );
     }
     const mintBuilder = CML.SingleMintBuilder.new(mintAssets);
     const policy = yield* pipe(
       Effect.fromNullable(config.scripts.get(policyId)),
       Effect.orElseFail(() =>
-        mintError("MissingPolicy", `No policy found, policy id: ${policyId}`),
-      ),
+        mintError("MissingPolicy", `No policy found, policy id: ${policyId}`)
+      )
     );
     switch (policy.type) {
       case "Native":
         config.txBuilder.add_mint(
           mintBuilder.native_script(
             CML.NativeScript.from_cbor_hex(policy.script),
-            CML.NativeScriptWitnessInfo.assume_signature_count(),
-          ),
+            CML.NativeScriptWitnessInfo.assume_signature_count()
+          )
         );
         break;
 
@@ -60,14 +60,14 @@ export const mintAssets = (
         const red = yield* pipe(
           Effect.fromNullable(redeemer),
           Effect.orElseFail(() =>
-            mintError("MissingRedeemer", ERROR_MESSAGE.MISSIG_REDEEMER),
-          ),
+            mintError("MissingRedeemer", ERROR_MESSAGE.MISSIG_REDEEMER)
+          )
         );
         config.txBuilder.add_mint(
           mintBuilder.plutus_script(
             toPartial(toV1(policy.script), red),
-            CML.Ed25519KeyHashList.new(),
-          ),
+            CML.Ed25519KeyHashList.new()
+          )
         );
         break;
       }
@@ -75,14 +75,14 @@ export const mintAssets = (
         const red = yield* pipe(
           Effect.fromNullable(redeemer),
           Effect.orElseFail(() =>
-            mintError("MissingRedeemer", ERROR_MESSAGE.MISSIG_REDEEMER),
-          ),
+            mintError("MissingRedeemer", ERROR_MESSAGE.MISSIG_REDEEMER)
+          )
         );
         config.txBuilder.add_mint(
           mintBuilder.plutus_script(
             toPartial(toV2(policy.script), red),
-            CML.Ed25519KeyHashList.new(),
-          ),
+            CML.Ed25519KeyHashList.new()
+          )
         );
         break;
       }

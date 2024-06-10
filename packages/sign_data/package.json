@@ -26,20 +26,20 @@
   "author": "",
   "license": "MIT",
   "browser": {
-    "@dcspark/cardano-multiplatform-lib-nodejs": "@dcspark/cardano-multiplatform-lib-browser",
+    "@hadelive/cardano-multiplatform-lib-nodejs": "@hadelive/cardano-multiplatform-lib-browser",
     "@emurgo/cardano-message-signing-nodejs": "@emurgo/cardano-message-signing-browser"
   },
   "dependencies": {
-    "@dcspark/cardano-multiplatform-lib-nodejs": "^5.3.0",
-    "@dcspark/cardano-multiplatform-lib-browser": "^5.3.0",
-    "@emurgo/cardano-message-signing-nodejs": "^1.0.1",
     "@emurgo/cardano-message-signing-browser": "^1.0.1",
+    "@emurgo/cardano-message-signing-nodejs": "^1.0.1",
+    "@hadelive/cardano-multiplatform-lib-browser": "^5.3.1",
+    "@hadelive/cardano-multiplatform-lib-nodejs": "^5.3.1",
     "@lucid-evolution/core-types": "workspace:*",
     "@lucid-evolution/core-utils": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^20.12.8",
-    "tsup": "^8.0.2",
+    "@types/node": "^20.14.2",
+    "tsup": "^8.1.0",
     "typescript": "^5.4.5"
   }
 }

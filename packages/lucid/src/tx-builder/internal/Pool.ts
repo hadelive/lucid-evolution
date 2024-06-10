@@ -18,7 +18,7 @@ import {
   toV2,
   validateAddressDetails,
 } from "./TxUtils.js";
-import * as CML from "@dcspark/cardano-multiplatform-lib-nodejs";
+import * as CML from "@hadelive/cardano-multiplatform-lib-nodejs";
 import { LucidConfig } from "../../lucid-evolution/LucidEvolution.js";
 import { fromText } from "@lucid-evolution/core-utils";
 
@@ -29,7 +29,7 @@ export const delegateTo = (
   config: TxBuilder.TxBuilderConfig,
   rewardAddress: RewardAddress,
   poolId: PoolId,
-  redeemer?: Redeemer,
+  redeemer?: Redeemer
 ): Effect.Effect<void, TxBuilderError> =>
   Effect.gen(function* () {
     const addressDetails = yield* pipe(
@@ -37,25 +37,25 @@ export const delegateTo = (
       Effect.andThen((address) =>
         address.type !== "Reward"
           ? poolError("InvalidCredential", "Address type must be Reward type.")
-          : Effect.succeed(address),
-      ),
+          : Effect.succeed(address)
+      )
     );
 
     const stakeCredential = yield* pipe(
       Effect.fromNullable(addressDetails.stakeCredential),
-      Effect.orElseFail(() => poolError("MissingStakeCredential")),
+      Effect.orElseFail(() => poolError("MissingStakeCredential"))
     );
 
     switch (stakeCredential.type) {
       case "Key": {
         const credential = CML.Credential.new_pub_key(
-          CML.Ed25519KeyHash.from_hex(stakeCredential.hash),
+          CML.Ed25519KeyHash.from_hex(stakeCredential.hash)
         );
         const certBuilder = CML.SingleCertificateBuilder.new(
           CML.Certificate.new_stake_delegation(
             credential,
-            CML.Ed25519KeyHash.from_bech32(poolId),
-          ),
+            CML.Ed25519KeyHash.from_bech32(poolId)
+          )
         );
         config.txBuilder.add_cert(certBuilder.payment_key());
         break;
@@ -63,36 +63,36 @@ export const delegateTo = (
 
       case "Script": {
         const credential = CML.Credential.new_script(
-          CML.ScriptHash.from_hex(stakeCredential.hash),
+          CML.ScriptHash.from_hex(stakeCredential.hash)
         );
         const certBuilder = CML.SingleCertificateBuilder.new(
           CML.Certificate.new_stake_delegation(
             credential,
-            CML.Ed25519KeyHash.from_bech32(poolId),
-          ),
+            CML.Ed25519KeyHash.from_bech32(poolId)
+          )
         );
         const script = yield* pipe(
           Effect.fromNullable(config.scripts.get(stakeCredential.hash)),
           Effect.orElseFail(() =>
             poolError(
               "MissingScript",
-              `No script found, script hash: ${stakeCredential.hash}, consider using attach modules`,
-            ),
-          ),
+              `No script found, script hash: ${stakeCredential.hash}, consider using attach modules`
+            )
+          )
         );
         const red = yield* pipe(
           Effect.fromNullable(redeemer),
           Effect.orElseFail(() =>
-            poolError("MissingRedeemer", ERROR_MESSAGE.MISSIG_REDEEMER),
-          ),
+            poolError("MissingRedeemer", ERROR_MESSAGE.MISSIG_REDEEMER)
+          )
         );
         switch (script.type) {
           case "PlutusV1": {
             config.txBuilder.add_cert(
               certBuilder.plutus_script(
                 toPartial(toV1(script.script), red),
-                CML.Ed25519KeyHashList.new(),
-              ),
+                CML.Ed25519KeyHashList.new()
+              )
             );
             break;
           }
@@ -101,8 +101,8 @@ export const delegateTo = (
             config.txBuilder.add_cert(
               certBuilder.plutus_script(
                 toPartial(toV2(script.script), red),
-                CML.Ed25519KeyHashList.new(),
-              ),
+                CML.Ed25519KeyHashList.new()
+              )
             );
             break;
           }
@@ -118,15 +118,15 @@ export const delegateTo = (
 /** Register a stake pool. A pool deposit is required. The metadataUrl needs to be hosted already before making the registration. */
 export const registerPool = (
   config: TxBuilder.TxBuilderConfig,
-  poolParams: PoolParams,
+  poolParams: PoolParams
 ) =>
   Effect.gen(function* () {
     const poolRegistration = yield* createPoolRegistration(
       poolParams,
-      config.lucidConfig,
+      config.lucidConfig
     );
     const certBuilder = CML.SingleCertificateBuilder.new(
-      CML.Certificate.new_pool_registration(poolRegistration.pool_params()),
+      CML.Certificate.new_pool_registration(poolRegistration.pool_params())
     );
 
     config.txBuilder.add_cert(certBuilder.skip_witness());
@@ -139,13 +139,13 @@ const createPoolRegistration = (poolParams: PoolParams, lucid: LucidConfig) =>
       const addressDetails = yield* validateAddressDetails(owner, lucid);
       const stakeCredential = yield* pipe(
         Effect.fromNullable(addressDetails.stakeCredential),
-        Effect.orElseFail(() => poolError("MissingStakeCredential")),
+        Effect.orElseFail(() => poolError("MissingStakeCredential"))
       );
       stakeCredential.type === "Key"
         ? poolOwners.add(CML.Ed25519KeyHash.from_hex(stakeCredential.hash))
         : poolError(
             "InvalidCredential",
-            "Only key hashes allowed for pool owners.",
+            "Only key hashes allowed for pool owners."
           );
     }
     const metadataHash = yield* getMetadataHash(poolParams.metadataUrl);
@@ -156,7 +156,7 @@ const createPoolRegistration = (poolParams: PoolParams, lucid: LucidConfig) =>
           //TODO: missing test
           const ipV4 = relay.ipV4
             ? CML.Ipv4.from_cbor_bytes(
-                new Uint8Array(relay.ipV4.split(".").map((b) => parseInt(b))),
+                new Uint8Array(relay.ipV4.split(".").map((b) => parseInt(b)))
               )
             : undefined;
           //TODO: missing test
@@ -171,16 +171,16 @@ const createPoolRegistration = (poolParams: PoolParams, lucid: LucidConfig) =>
           relays.add(
             CML.Relay.new_single_host_name(
               relay.port,
-              CML.DnsName.from_cbor_hex(fromText(relay.domainName!)),
-            ),
+              CML.DnsName.from_cbor_hex(fromText(relay.domainName!))
+            )
           );
           break;
         }
         case "MultiHost": {
           relays.add(
             CML.Relay.new_multi_host_name(
-              CML.DnsName.from_cbor_hex(fromText(relay.domainName!)),
-            ),
+              CML.DnsName.from_cbor_hex(fromText(relay.domainName!))
+            )
           );
           break;
         }
@@ -194,20 +194,20 @@ const createPoolRegistration = (poolParams: PoolParams, lucid: LucidConfig) =>
         poolParams.cost,
         CML.UnitInterval.new(
           BigInt(poolParams.margin),
-          BigInt(poolParams.margin),
+          BigInt(poolParams.margin)
         ),
         CML.RewardAddress.from_address(
-          yield* toCMLAddress(poolParams.rewardAddress, lucid),
+          yield* toCMLAddress(poolParams.rewardAddress, lucid)
         )!,
         poolOwners,
         relays,
         metadataHash
           ? CML.PoolMetadata.new(
               CML.Url.from_cbor_hex(fromText(poolParams.metadataUrl!)),
-              metadataHash,
+              metadataHash
             )
-          : undefined,
-      ),
+          : undefined
+      )
     );
   });
 
@@ -219,10 +219,10 @@ const getMetadataHash = (metadataUrl?: string) =>
           try: () => fetch(metadataUrl),
           catch: (error) => poolError("InvalidMetadata", String(error)),
         }),
-        Effect.andThen((resp) => Effect.promise(() => resp.arrayBuffer())),
+        Effect.andThen((resp) => Effect.promise(() => resp.arrayBuffer()))
       );
       const metadataHash = CML.PoolMetadataHash.from_raw_bytes(
-        new Uint8Array(metadata),
+        new Uint8Array(metadata)
       );
       return metadataHash;
     } else {
